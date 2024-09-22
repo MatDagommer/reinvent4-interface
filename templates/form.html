@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOML file generator</title>
+</head>
+<body>
+    <h1>REINVENT4: Generate your TOML config file</h1>
+    <form id="toml-form">
+        <label for="option1">Option 1 :</label>
+        <select id="option1" name="option1">
+            <option value="choix1">Choix 1</option>
+            <option value="choix2">Choix 2</option>
+        </select>
+        <br><br>
+
+        <label for="option2">Option 2 :</label>
+        <select id="option2" name="option2">
+            <option value="choixA">Choix A</option>
+            <option value="choixB">Choix B</option>
+        </select>
+        <br><br>
+
+        <button type="submit">Envoyer</button>
+    </form>
+
+    <script>
+        document.getElementById('toml-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Collecte des réponses du formulaire
+            const option1 = document.getElementById('option1').value;
+            const option2 = document.getElementById('option2').value;
+
+            // Envoie des données au serveur (AJAX)
+            fetch('/generate-toml', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    option1: option1,
+                    option2: option2
+                }),
+            }).then(response => response.blob())
+              .then(blob => {
+                  // Téléchargement du fichier TOML généré
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'config.toml';
+                  document.body.appendChild(a);
+                  a.click();
+                  a.remove();
+              });
+        });
+    </script>
+</body>
+</html>
