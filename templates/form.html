@@ -29,13 +29,120 @@
             document.getElementById("sub_option4").style.display = "block";
         }
     }
+
+    function updateDefaultFilename() {
+        var runType = document.getElementById("run_type").value;
+        var outputFile = document.getElementById("output_file");
+        
+        switch(runType) {
+            case "sampling":
+                outputFile.value = "sampling.csv";
+                break;
+            case "scoring":
+                outputFile.value = "scoring.csv";
+                break;
+            case "staged_learning":
+                outputFile.value = "staged_learning.csv";
+                break;
+            case "transfer_learning":
+                outputFile.value = "transfer_learning.csv";
+                break;
+        }
+    }
+
+    function updateModelFile() {
+        var generator = document.getElementById("generator").value;
+        var modelFile = document.getElementById("model_file");
+        
+        switch(generator) {
+            case "Reinvent":
+                modelFile.value = "reinvent.prior";
+                break;
+            case "LibInvent":
+                modelFile.value = "libinvent.prior";
+                break;
+            case "LinkInvent":
+                modelFile.value = "linkinvent.prior";
+                break;
+            case "Mol2Mol":
+                modelFile.value = "mol2mol_medium_similarity.prior";
+                break;
+        }
+    }
+
+    function selectFolder() {
+        return new Promise((resolve) => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.webkitdirectory = true;
+            input.directory = true;
+            input.style.display = 'none';
+
+            input.addEventListener('change', (e) => {
+                const files = e.target.files;
+                if (files.length > 0) {
+                    const folderPath = files[0].webkitRelativePath.split('/')[0];
+                    document.getElementById('current_folder').textContent = '~/' + folderPath + '/';
+                    updateDefaultFilename();
+                }
+                resolve();
+            });
+
+            document.body.appendChild(input);
+            input.click();
+            document.body.removeChild(input);
+        });
+    }
+
+    function updateFolderPath() {
+        selectFolder();
+    }
+
+    function showMol2MolOptions() {
+        var generatorValue = document.getElementById("generator").value;
+        var mol2molOptions = document.getElementById("mol2mol_options");
+        
+        if (generatorValue === "Mol2Mol") {
+            mol2molOptions.style.display = "block";
+        } else {
+            mol2molOptions.style.display = "none";
+        }
+    }
+    function showSmilesFileInput() {
+        var generatorValue = document.getElementById("generator").value;
+        var smilesFileInput = document.getElementById("smiles_file_input");
+        var modelFileDiv = document.getElementById("model_file");
+
+        // Show model file input for all generators
+        modelFileDiv.style.display = "block";
+
+        // Hide SMILES file input for Reinvent, show for other generators
+        if (generatorValue !== "Reinvent") {
+            smilesFileInput.style.display = "block";
+        } else {
+            smilesFileInput.style.display = "none";
+        }
+
+        // Update the model file
+        updateModelFile();
+
+        // Call showMol2MolOptions to handle Mol2Mol-specific fields
+        showMol2MolOptions();
+    }
+
     // Call showSubOptions() when the page loads to set the initial state
-    window.onload = showSubOptions;
+    window.onload = function() {
+        showSubOptions();
+        updateModelFile();
+    };
     </script>
 </head>
 <body>
-    <h1>REINVENT4: Design your experiment</h1>
+    <h1>REINVENT4: <span style="color: #666666;">Design your experiment</span></h1>
     <form id="toml-form">
+        <!-- New section separator -->
+        <hr>
+
         <label for="run_type">Run Type :</label>
         <select id="run_type" name="run_type" onchange="showSubOptions()">
             <option value="sampling">Sampling</option>
@@ -45,34 +152,99 @@
         </select>
         <br><br>
 
-        <!-- Sub-options for Type 1 -->
+        <label for="json_config">JSON config file:</label>
+        <div style="display: flex; align-items: center;">
+            <span id="folder_path" style="margin-right: 10px; color: #888; cursor: pointer;" onclick="selectFolder()">
+                <i class="fas fa-folder"></i> <span id="current_folder">~/REINVENT4/exps/</span>
+            </span>
+            <input type="text" id="json_config" name="json_config" value="sampling.json">
+        </div>
+        <br><br>
+
+        <hr>
+
+        <!-- Sub-options for Sampling -->
         <div id="sub_option1" style="display:none;">
-            <label for="sub_option">Sampling Options:</label>
-            <select name="sub_option">
-                <option value="Option1_A">Option 1A</option>
-                <option value="Option1_B">Option 1B</option>
+            <label for="generator">Generator:</label>
+            <select name="generator" id="generator" onchange="showSmilesFileInput()">
+                <option value="Reinvent">Reinvent</option>
+                <option value="LibInvent">LibInvent</option>
+                <option value="LinkInvent">LinkInvent</option>
+                <option value="Mol2Mol">Mol2Mol</option>
             </select><br><br>
+
+            <div id="model_file_div">
+                <label for="model_file">Model File:</label>
+                <div style="display: flex; align-items: center;">
+                    <span id="model_folder_path" style="margin-right: 10px; color: #888;">priors/</span>
+                    <input type="text" id="model_file" name="model_file">
+                </div>
+                <br><br>
+            </div>
+            
+            <!-- SMILES file input (not shown for Sampling/Reinvent combination) -->
+            <div id="smiles_file_input" style="display:none;">
+                <label for="smiles_file">SMILES File:</label>
+                <input type="file" id="smiles_file" name="smiles_file">
+                <br><br>
+            </div>
+
+            <label for="num_molecules">Number of Molecules:</label>
+            <input type="number" id="num_molecules" name="num_molecules" min="1" value="1000"><br><br>
+            
+            <label for="unique_molecules">Unique molecules:</label>
+            <select id="unique_molecules" name="unique_molecules">
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select><br><br>
+            
+            <label for="randomize_smiles">Randomize SMILES:</label>
+            <select id="randomize_smiles" name="randomize_smiles">
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select><br><br>
+
+            <!-- New Mol2Mol options -->
+            <div id="mol2mol_options" style="display:none;">
+                <label for="sample_strategy">Sample Strategy:</label>
+                <select id="sample_strategy" name="sample_strategy">
+                    <option value="beamsearch">Beamsearch</option>
+                    <option value="multinomial">Multinomial</option>
+                </select><br><br>
+
+                <label for="temperature">Temperature:</label>
+                <input type="number" id="temperature" name="temperature" min="0" max="2" step="0.1" value="1.0"><br><br>
+
+                <label for="tensorboard_log_dir">TensorBoard Log Directory:</label>
+                <input type="text" id="tensorboard_log_dir" name="tensorboard_log_dir" value="tb_logs"><br><br>
+            </div>
         </div>
 
-        <!-- Sub-options for Type 2 -->
+        <!-- Sub-options for Scoring -->
         <div id="sub_option2" style="display:none;">
-            <label for="sub_option">Scoring Options:</label>
-            <select name="sub_option">
-                <option value="Option2_A">Option 2A</option>
-                <option value="Option2_B">Option 2B</option>
+            <label for="sub_option2_A">Scoring Type:</label>
+            <select name="sub_option2_A" id="sub_option2_A">
+                <option value="Option2_AA">Geometric Mean</option>
+                <option value="Option2_AB">Arithmetic Mean</option>
+            </select><br><br>
+
+            <label for="sub_option2_B">In Parallel:</label>
+            <select name="sub_option2_B" id="sub_option2_B">
+                <option value="Option2_BA">Yes</option>
+                <option value="Option2_BB">No</option>
             </select><br><br>
         </div>
 
-        <!-- Sub-options for Type 2 -->
+        <!-- Sub-options for Staged Learning -->
         <div id="sub_option3" style="display:none;">
-            <label for="sub_option">Staged Learning Options:</label>
-            <select name="sub_option">
+            <label for="sub_option3">Staged Learning Options:</label>
+            <select name="sub_option3">
                 <option value="Option3_A">Option 3A</option>
                 <option value="Option3_B">Option 3B</option>
             </select><br><br>
         </div>
 
-        <!-- Sub-options for Type 4 -->
+        <!-- Sub-options for Transfer Learning -->
         <div id="sub_option4" style="display:none;">
             <label for="sub_option">Transfer Learning Options:</label>
             <select name="sub_option">
@@ -80,6 +252,21 @@
                 <option value="Option4_B">Option 4B</option>
             </select><br><br>
         </div>
+
+        <!-- New section separator -->
+        <hr>
+
+        <label for="output_folder">Output File:</label>
+        <div style="display: flex; align-items: center;">
+            <span id="folder_path" style="margin-right: 10px; color: #888; cursor: pointer;" onclick="selectFolder()">
+                <i class="fas fa-folder"></i> <span id="current_folder">~/REINVENT4/exps/</span>
+            </span>
+            <input type="text" id="output_file" name="output_file" value="sampling.csv">
+        </div>
+        <br><br>
+        
+        <!-- New section separator -->
+        <hr>
 
         <button type="submit">Submit</button>
     </form>
