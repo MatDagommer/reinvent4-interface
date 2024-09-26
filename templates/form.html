@@ -4,23 +4,82 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TOML file generator</title>
+    <script>
+        function showSubOptions() {
+        // Get the selected values for both option1 and option2
+        var RunTypeValue = document.getElementById("run_type").value;
+
+        // Hide all sub-options initially
+        document.getElementById("sub_option1").style.display = "none";
+        document.getElementById("sub_option2").style.display = "none";
+        document.getElementById("sub_option3").style.display = "none";
+        document.getElementById("sub_option4").style.display = "none";
+
+        // Show sub-options based on the selected values
+        if (RunTypeValue == "sampling") {
+            document.getElementById("sub_option1").style.display = "block";
+        }
+        if (RunTypeValue == "scoring") {
+            document.getElementById("sub_option2").style.display = "block";
+        }
+        if (RunTypeValue == "staged_learning") {
+            document.getElementById("sub_option3").style.display = "block";
+        }
+        if (RunTypeValue == "transfer_learning") {
+            document.getElementById("sub_option4").style.display = "block";
+        }
+    }
+    // Call showSubOptions() when the page loads to set the initial state
+    window.onload = showSubOptions;
+    </script>
 </head>
 <body>
-    <h1>REINVENT4: Generate your TOML config file</h1>
+    <h1>REINVENT4: Design your experiment</h1>
     <form id="toml-form">
-        <label for="option1">Option 1 :</label>
-        <select id="option1" name="option1">
-            <option value="choix1">Choix 1</option>
-            <option value="choix2">Choix 2</option>
+        <label for="run_type">Run Type :</label>
+        <select id="run_type" name="run_type" onchange="showSubOptions()">
+            <option value="sampling">Sampling</option>
+            <option value="scoring">Scoring</option>
+            <option value="staged_learning">Staged Learning</option>
+            <option value="transfer_learning">Transfer Learning</option>
         </select>
         <br><br>
 
-        <label for="option2">Option 2 :</label>
-        <select id="option2" name="option2">
-            <option value="choixA">Choix A</option>
-            <option value="choixB">Choix B</option>
-        </select>
-        <br><br>
+        <!-- Sub-options for Type 1 -->
+        <div id="sub_option1" style="display:none;">
+            <label for="sub_option">Sampling Options:</label>
+            <select name="sub_option">
+                <option value="Option1_A">Option 1A</option>
+                <option value="Option1_B">Option 1B</option>
+            </select><br><br>
+        </div>
+
+        <!-- Sub-options for Type 2 -->
+        <div id="sub_option2" style="display:none;">
+            <label for="sub_option">Scoring Options:</label>
+            <select name="sub_option">
+                <option value="Option2_A">Option 2A</option>
+                <option value="Option2_B">Option 2B</option>
+            </select><br><br>
+        </div>
+
+        <!-- Sub-options for Type 2 -->
+        <div id="sub_option3" style="display:none;">
+            <label for="sub_option">Staged Learning Options:</label>
+            <select name="sub_option">
+                <option value="Option3_A">Option 3A</option>
+                <option value="Option3_B">Option 3B</option>
+            </select><br><br>
+        </div>
+
+        <!-- Sub-options for Type 4 -->
+        <div id="sub_option4" style="display:none;">
+            <label for="sub_option">Transfer Learning Options:</label>
+            <select name="sub_option">
+                <option value="Option4_A">Option 4A</option>
+                <option value="Option4_B">Option 4B</option>
+            </select><br><br>
+        </div>
 
         <button type="submit">Submit</button>
     </form>
