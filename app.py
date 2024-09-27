@@ -27,21 +27,20 @@ def generate_toml():
     # Créer la structure TOML
     config = {
         'run_type': run_type,
+        'device': data.get('device', 'cuda:0'),
         'json_config': f"{current_folder}{json_config}",
         'output_csv': f"{current_folder}{data.get('output_file', 'sampling.csv')}",
         'parameters': {
-            'specific': {
-                'model_path': f"priors/{data.get('model_file', 'reinvent.prior')}",
-                'number_of_molecules': int(data.get('num_molecules', 1000)),
-                'unique_molecules': data.get('unique_molecules', 'Yes') == 'Yes',
-                'randomize': data.get('randomize_smiles', 'Yes') == 'Yes'
-            }
+            'model_path': f"priors/{data.get('model_file', 'reinvent.prior')}",
+            'number_of_molecules': int(data.get('num_molecules', 1000)),
+            'unique_molecules': data.get('unique_molecules', 'Yes') == 'Yes',
+            'randomize': data.get('randomize_smiles', 'Yes') == 'Yes'
         }
     }
 
     # Add Mol2Mol specific options if the generator is Mol2Mol
     if data.get('generator') == 'Mol2Mol':
-        config['parameters']['specific'].update({
+        config['parameters'].update({
             'sample_strategy': data.get('sample_strategy', 'beamsearch'),
             'temperature': float(data.get('temperature', 1.0)),
             'tensorboard_log_dir': data.get('tensorboard_log_dir', 'tb_logs')
@@ -49,7 +48,7 @@ def generate_toml():
 
     # Add SMILES file for generators other than Reinvent
     if data.get('generator') != 'Reinvent':
-        config['parameters']['specific']['smiles_file'] = data.get('smiles_file', '')
+        config['parameters']['smiles_file'] = data.get('smiles_file', '')
 
 
     # Générer le fichier TOML

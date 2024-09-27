@@ -5,15 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TOML file generator</title>
     <script>
-        // Add this function at the beginning of the script section
+        // Set initial folder path
         function setInitialFolderPath() {
-            // You'll need to replace this with the actual way to get the project folder path
-            // This is just a placeholder
-            const projectFolder = "/path/to/your/project";
-            const initialPath = projectFolder + "/exps/";
-            document.getElementById('current_folder').textContent = initialPath;
+            document.getElementById('current_folder').textContent = '~/Documents/';
         }
-
         // Modify the window.onload function to include the new function
         window.onload = function() {
             showSubOptions();
@@ -104,9 +99,12 @@
             input.addEventListener('change', (e) => {
                 const files = e.target.files;
                 if (files.length > 0) {
-                    const folderPath = files[0].webkitRelativePath.split('/')[0];
-                    document.getElementById('current_folder').textContent = '~/REINVENT4/exps/' + folderPath + '/';
-                    updateDefaultFilename();
+                    // Get the full path of the selected folder
+                    const fullPath = files[0].webkitRelativePath;
+                    // Extract the path without the file name
+                    const folderPath = fullPath.split('/').slice(0, -1).join('/');
+                    // Update the current folder display
+                    document.getElementById('current_folder').textContent = '~/' + folderPath + '/';
                 }
                 resolve();
             });
@@ -116,7 +114,12 @@
     }
 
     function updateFolderPath() {
-        selectFolder();
+        selectFolder().then(() => {
+            const folderPath = document.getElementById('current_folder').textContent;
+            document.querySelectorAll('.folder-path').forEach(el => {
+                el.textContent = folderPath;
+            });
+        });
     }
 
     function showMol2MolOptions() {
@@ -181,13 +184,24 @@
         </select>
         <br><br>
 
-        <label for="json_config" style="display: inline-block; margin-right: 10px;">JSON config file:</label>
+        <label for="json_config" style="display: inline-block; margin-right: 10px;">JSON Config file:</label>
         <div style="display: inline-flex; align-items: center;">
-            <span class="folder-path" style="margin-right: 5px; color: #0000FF; cursor: pointer;" onclick="updateFolderPath()">
-                <i class="fas fa-folder"></i> <span id="current_folder">~/REINVENT4/exps/</span>
-            </span>
+            <span class="folder-icon" style="margin-right: 5px; color: #0000FF; cursor: pointer;" onclick="updateFolderPath()">
+                <i class="fas fa-folder"></i>
+            <span id="current_folder" style="margin-right: 5px;">~/Documents/</span>
             <input type="text" id="json_config" name="json_config" value="sampling.json" style="flex-grow: 1;">
         </div>
+
+        <br><br>
+
+        <label for="output_folder" style="display: inline-block; margin-right: 10px;">Output File:</label>
+        <div style="display: inline-flex; align-items: center;">
+            <span id="folder_path" style="margin-right: 5px; color: #0000FF; cursor: pointer;" onclick="selectFolder2()">
+                <i class="fas fa-folder"></i> <span id="current_folder">~/Documents/</span>
+            </span>
+            <input type="text" id="output_file" name="output_file" value="sampling.csv" style="flex-grow: 1;">
+        </div>
+        <br>
 
         <hr>
 
@@ -280,18 +294,6 @@
                 <option value="Option4_B">Option 4B</option>
             </select><br><br>
         </div>
-
-        <!-- New section separator -->
-        <hr>
-
-        <label for="output_folder" style="display: inline-block; margin-right: 10px;">Output File:</label>
-        <div style="display: inline-flex; align-items: center;">
-            <span id="folder_path" style="margin-right: 5px; color: #0000FF; cursor: pointer;" onclick="selectFolder()">
-                <i class="fas fa-folder"></i> <span id="current_folder">~/REINVENT4/exps/</span>
-            </span>
-            <input type="text" id="output_file" name="output_file" value="sampling.csv" style="flex-grow: 1;">
-        </div>
-        <br>
         
         <!-- New section separator -->
         <hr>
