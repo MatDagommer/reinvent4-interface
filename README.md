@@ -1,6 +1,6 @@
-# REINVENT GUI
+# REINVENT4 Interface
 
-Welcome to the REINVENT GUI project!
+Welcome to the REINVENT4 Interface project!
 
 This repository aims to create a minimalistic graphical user interface (GUI) for REINVENT users to easily set up and run experiments. REINVENT is a powerful tool for de novo molecular design, and this GUI will make it more accessible to researchers and scientists who prefer a visual approach to creating and managing their experiments.
 
