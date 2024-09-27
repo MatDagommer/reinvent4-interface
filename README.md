@@ -14,5 +14,3 @@ The main objective of this project is to simplify the process of creating REINVE
 - Visualize results
 
 By streamlining the experiment creation process, we hope to make REINVENT more accessible to a wider audience and accelerate drug discovery research.
-
-// ... (rest of the README content)
