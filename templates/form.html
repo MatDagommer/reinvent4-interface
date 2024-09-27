@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TOML file generator</title>
     <script>
+        // Add this function at the beginning of the script section
+        function setInitialFolderPath() {
+            // You'll need to replace this with the actual way to get the project folder path
+            // This is just a placeholder
+            const projectFolder = "/path/to/your/project";
+            const initialPath = projectFolder + "/exps/";
+            document.getElementById('current_folder').textContent = initialPath;
+        }
+
+        // Modify the window.onload function to include the new function
+        window.onload = function() {
+            showSubOptions();
+            updateModelFile();
+            setInitialFolderPath();
+        };
         function showSubOptions() {
         // Get the selected values for both option1 and option2
         var RunTypeValue = document.getElementById("run_type").value;
@@ -70,27 +85,33 @@
         }
     }
 
+    function updateFolderPath() {
+        selectFolder().then(() => {
+            const folderPath = document.getElementById('current_folder').textContent;
+            document.querySelectorAll('.folder-path').forEach(el => {
+                el.textContent = folderPath;
+            });
+        });
+    }
+
     function selectFolder() {
         return new Promise((resolve) => {
             const input = document.createElement('input');
             input.type = 'file';
             input.webkitdirectory = true;
             input.directory = true;
-            input.style.display = 'none';
 
             input.addEventListener('change', (e) => {
                 const files = e.target.files;
                 if (files.length > 0) {
                     const folderPath = files[0].webkitRelativePath.split('/')[0];
-                    document.getElementById('current_folder').textContent = '~/' + folderPath + '/';
+                    document.getElementById('current_folder').textContent = '~/REINVENT4/exps/' + folderPath + '/';
                     updateDefaultFilename();
                 }
                 resolve();
             });
 
-            document.body.appendChild(input);
             input.click();
-            document.body.removeChild(input);
         });
     }
 
@@ -152,14 +173,21 @@
         </select>
         <br><br>
 
-        <label for="json_config">JSON config file:</label>
-        <div style="display: flex; align-items: center;">
-            <span id="folder_path" style="margin-right: 10px; color: #888; cursor: pointer;" onclick="selectFolder()">
+        <label for="device">Device:</label>
+        <select id="device" name="device">
+            <option value="cuda:0">cuda:0</option>
+            <option value="mps">mps</option>
+            <option value="cpu">cpu</option>
+        </select>
+        <br><br>
+
+        <label for="json_config" style="display: inline-block; margin-right: 10px;">JSON config file:</label>
+        <div style="display: inline-flex; align-items: center;">
+            <span class="folder-path" style="margin-right: 5px; color: #0000FF; cursor: pointer;" onclick="updateFolderPath()">
                 <i class="fas fa-folder"></i> <span id="current_folder">~/REINVENT4/exps/</span>
             </span>
-            <input type="text" id="json_config" name="json_config" value="sampling.json">
+            <input type="text" id="json_config" name="json_config" value="sampling.json" style="flex-grow: 1;">
         </div>
-        <br><br>
 
         <hr>
 
@@ -174,13 +202,13 @@
             </select><br><br>
 
             <div id="model_file_div">
-                <label for="model_file">Model File:</label>
-                <div style="display: flex; align-items: center;">
-                    <span id="model_folder_path" style="margin-right: 10px; color: #888;">priors/</span>
-                    <input type="text" id="model_file" name="model_file">
+                <label for="model_file" style="display: inline-block; margin-right: 10px;">Model File:</label>
+                <div style="display: inline-flex; align-items: center;">
+                    <span id="model_folder_path" style="color: #0000FF; margin-right: 5px;">priors/</span>
+                    <input type="text" id="model_file" name="model_file" style="flex-grow: 1;">
                 </div>
-                <br><br>
             </div>
+            <br>
             
             <!-- SMILES file input (not shown for Sampling/Reinvent combination) -->
             <div id="smiles_file_input" style="display:none;">
@@ -256,14 +284,14 @@
         <!-- New section separator -->
         <hr>
 
-        <label for="output_folder">Output File:</label>
-        <div style="display: flex; align-items: center;">
-            <span id="folder_path" style="margin-right: 10px; color: #888; cursor: pointer;" onclick="selectFolder()">
+        <label for="output_folder" style="display: inline-block; margin-right: 10px;">Output File:</label>
+        <div style="display: inline-flex; align-items: center;">
+            <span id="folder_path" style="margin-right: 5px; color: #0000FF; cursor: pointer;" onclick="selectFolder()">
                 <i class="fas fa-folder"></i> <span id="current_folder">~/REINVENT4/exps/</span>
             </span>
-            <input type="text" id="output_file" name="output_file" value="sampling.csv">
+            <input type="text" id="output_file" name="output_file" value="sampling.csv" style="flex-grow: 1;">
         </div>
-        <br><br>
+        <br>
         
         <!-- New section separator -->
         <hr>
@@ -272,34 +300,39 @@
     </form>
 
     <script>
+        setInitialFolderPath();
         document.getElementById('toml-form').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            // Collecte des réponses du formulaire
-            const option1 = document.getElementById('option1').value;
-            const option2 = document.getElementById('option2').value;
+            // Collect form data
+            const formData = new FormData(this);
+            const jsonData = {};
 
-            // Envoie des données au serveur (AJAX)
+            for (const [key, value] of formData.entries()) {
+                jsonData[key] = value;
+            }
+
+            // Add current folder path
+            jsonData['current_folder'] = document.getElementById('current_folder').textContent;
+
+            // Send data to the server
             fetch('/generate-toml', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    option1: option1,
-                    option2: option2
-                }),
+                body: JSON.stringify(jsonData),
             }).then(response => response.blob())
-              .then(blob => {
-                  // Téléchargement du fichier TOML généré
-                  const url = window.URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = 'config.toml';
-                  document.body.appendChild(a);
-                  a.click();
-                  a.remove();
-              });
+            .then(blob => {
+                // Download the generated TOML file
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'config.toml';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                });
         });
     </script>
 </body>

@@ -1,0 +1,10 @@
+run_type = "sampling"
+device = "mps"
+json_out_config = "artifacts/exps/_sampling.json"
+
+[parameters]
+model_file = "priors/reinvent.prior"
+output_file = 'artifacts/exps/sampling.csv'
+num_smiles = 1000
+unique_molecules = true
+randomize_smiles = true
