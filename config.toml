@@ -1,13 +1,11 @@
 run_type = "sampling"
-json_config = "~/REINVENT4/exps/sampling.json"
-output_csv = "~/REINVENT4/exps/sampling.csv"
+device = "cuda:0"
+json_config = "/Users/matthieu/Documents/Github/reinvent4-interface/configs/json/sampling.json"
+output_csv = "/Users/matthieu/Documents/Github/reinvent4-interface/artifacts/sampling.csv"
 
-[logging]
-console = true
-file = true
-
-[parameters.specific]
-model_path = "priors/reinvent.prior"
+[parameters]
+model_path = "/Users/matthieu/Documents/Github/reinvent4-interface/priors/libinvent.prior"
 number_of_molecules = 1000
 unique_molecules = true
 randomize = true
+smiles_file = "/Users/matthieu/Documents/Github/reinvent4-interface/smiles.smi"

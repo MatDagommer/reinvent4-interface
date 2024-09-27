@@ -17,29 +17,56 @@
             setInitialFolderPath();
         };
         function showSubOptions() {
-        // Get the selected values for both option1 and option2
-        var RunTypeValue = document.getElementById("run_type").value;
+            // Get the selected value for run_type
+            var RunTypeValue = document.getElementById("run_type").value;
 
-        // Hide all sub-options initially
-        document.getElementById("sub_option1").style.display = "none";
-        document.getElementById("sub_option2").style.display = "none";
-        document.getElementById("sub_option3").style.display = "none";
-        document.getElementById("sub_option4").style.display = "none";
+            // Hide all sub-options initially
+            document.getElementById("sub_option1").style.display = "none";
+            document.getElementById("sub_option2").style.display = "none";
+            document.getElementById("sub_option3").style.display = "none";
+            document.getElementById("sub_option4").style.display = "none";
 
-        // Show sub-options based on the selected values
-        if (RunTypeValue == "sampling") {
-            document.getElementById("sub_option1").style.display = "block";
+            // Show sub-options based on the selected values
+            if (RunTypeValue == "sampling") {
+                document.getElementById("sub_option1").style.display = "block";
+            }
+            if (RunTypeValue == "scoring") {
+                document.getElementById("sub_option2").style.display = "block";
+            }
+            if (RunTypeValue == "staged_learning") {
+                document.getElementById("sub_option3").style.display = "block";
+            }
+            if (RunTypeValue == "transfer_learning") {
+                document.getElementById("sub_option4").style.display = "block";
+            }
+
+            // Update file names based on the selected run type
+            updateFileNames(RunTypeValue);
         }
-        if (RunTypeValue == "scoring") {
-            document.getElementById("sub_option2").style.display = "block";
+
+        function updateFileNames(runType) {
+            var jsonConfig = document.getElementById("json_config");
+            var outputFile = document.getElementById("output_file");
+
+            switch(runType) {
+                case "sampling":
+                    jsonConfig.value = "sampling.json";
+                    outputFile.value = "sampling.csv";
+                    break;
+                case "scoring":
+                    jsonConfig.value = "scoring.json";
+                    outputFile.value = "scoring.csv";
+                    break;
+                case "staged_learning":
+                    jsonConfig.value = "staged_learning.json";
+                    outputFile.value = "staged_learning.csv";
+                    break;
+                case "transfer_learning":
+                    jsonConfig.value = "transfer_learning.json";
+                    outputFile.value = "transfer_learning.csv";
+                    break;
+            }
         }
-        if (RunTypeValue == "staged_learning") {
-            document.getElementById("sub_option3").style.display = "block";
-        }
-        if (RunTypeValue == "transfer_learning") {
-            document.getElementById("sub_option4").style.display = "block";
-        }
-    }
 
     function updateDefaultFilename() {
         var runType = document.getElementById("run_type").value;
@@ -139,7 +166,7 @@
     function showSmilesFileInput() {
         var generatorValue = document.getElementById("generator").value;
         var smilesFileInput = document.getElementById("smiles_file_input");
-        var modelFileDiv = document.getElementById("model_file");
+        var modelFileDiv = document.getElementById("model_file_div");
 
         // Show model file input for all generators
         modelFileDiv.style.display = "block";
@@ -163,6 +190,40 @@
         showSubOptions();
         updateModelFile();
     };
+
+    document.getElementById('toml-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // Collect form data
+        const formData = new FormData(this);
+        const jsonData = {};
+
+        for (const [key, value] of formData.entries()) {
+            jsonData[key] = value;
+        }
+
+        // Add current folder path
+        jsonData['current_folder'] = document.getElementById('current_folder').textContent;
+
+        // Send data to the server
+        fetch('/generate-toml', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(jsonData),
+        }).then(response => response.blob())
+        .then(blob => {
+            // Download the generated TOML file
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'config.toml';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        });
+    });
     </script>
 </head>
 <body>
@@ -240,13 +301,15 @@
                     <input type="text" id="model_file" name="model_file" style="flex-grow: 1;">
                 </div>
             </div><br>
-
+        
             <!-- SMILES file input (not shown for Sampling/Reinvent combination) -->
-            <div id="smiles_file_input" style="display:none;">
-                <label for="smiles_file">SMILES File:</label>
-                <input type="file" id="smiles_file" name="smiles_file">
-                <br><br>
-            </div>
+            <div id="smiles_file_input">
+                <label for="smiles_file" style="display: inline-block; margin-right: 10px;">SMILES File:</label>
+                <div style="display: inline-flex; align-items: center;">
+                    <span id="smiles_folder_path" style="margin-right: 5px;">./smiles/</span>
+                    <input type="text" id="smiles_file" name="smiles_file" style="flex-grow: 1;">
+                </div>
+            </div><br>
 
             <label for="num_molecules">Number of Molecules:</label>
             <input type="number" id="num_molecules" name="num_molecules" min="1" value="1000"><br><br>
