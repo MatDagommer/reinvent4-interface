@@ -7,8 +7,9 @@
     <script>
         // Set initial folder path
         function setInitialFolderPath() {
-            document.getElementById('current_folder').textContent = '~/Documents/';
+            document.getElementById('current_folder').textContent = './configs/json/';
         }
+
         // Modify the window.onload function to include the new function
         window.onload = function() {
             showSubOptions();
@@ -99,12 +100,12 @@
             input.addEventListener('change', (e) => {
                 const files = e.target.files;
                 if (files.length > 0) {
-                    // Get the full path of the selected folder
+                    // Get the first file's webkitRelativePath
                     const fullPath = files[0].webkitRelativePath;
-                    // Extract the path without the file name
-                    const folderPath = fullPath.split('/').slice(0, -1).join('/');
-                    // Update the current folder display
-                    document.getElementById('current_folder').textContent = '~/' + folderPath + '/';
+                    // Extract the folder name (last directory in the path)
+                    const folderName = fullPath.split('/')[0];
+                    // Update the current folder display with the folder name
+                    document.getElementById('current_folder').textContent = folderName;
                 }
                 resolve();
             });
@@ -112,6 +113,8 @@
             input.click();
         });
     }
+
+
 
     function updateFolderPath() {
         selectFolder().then(() => {
@@ -121,6 +124,7 @@
             });
         });
     }
+
 
     function showMol2MolOptions() {
         var generatorValue = document.getElementById("generator").value;
@@ -184,11 +188,11 @@
         </select>
         <br><br>
 
-        <label for="json_config" style="display: inline-block; margin-right: 10px;">JSON Config file:</label>
+        <!-- <label for="json_config" style="display: inline-block; margin-right: 10px;">JSON Config file:</label>
         <div style="display: inline-flex; align-items: center;">
             <span class="folder-icon" style="margin-right: 5px; color: #0000FF; cursor: pointer;" onclick="updateFolderPath()">
                 <i class="fas fa-folder"></i>
-            <span id="current_folder" style="margin-right: 5px;">~/Documents/</span>
+            <span id="current_folder" style="margin-right: 5px;">./configs/json/</span>
             <input type="text" id="json_config" name="json_config" value="sampling.json" style="flex-grow: 1;">
         </div>
 
@@ -197,8 +201,22 @@
         <label for="output_folder" style="display: inline-block; margin-right: 10px;">Output File:</label>
         <div style="display: inline-flex; align-items: center;">
             <span id="folder_path" style="margin-right: 5px; color: #0000FF; cursor: pointer;" onclick="selectFolder2()">
-                <i class="fas fa-folder"></i> <span id="current_folder">~/Documents/</span>
+                <i class="fas fa-folder"></i> <span id="current_folder">./artifacts/</span>
             </span>
+            <input type="text" id="output_file" name="output_file" value="sampling.csv" style="flex-grow: 1;">
+        </div>
+        <br> -->
+        <label for="json_config" style="display: inline-block; margin-right: 10px;">JSON Config file:</label>
+        <div style="display: inline-flex; align-items: center;">
+            <span id="current_folder" style="margin-right: 5px;">./configs/json/</span>
+            <input type="text" id="json_config" name="json_config" value="sampling.json" style="flex-grow: 1;">
+        </div>
+
+        <br><br>
+
+        <label for="output_folder" style="display: inline-block; margin-right: 10px;">Output File:</label>
+        <div style="display: inline-flex; align-items: center;">
+            <span id="current_folder">./artifacts/ </span>
             <input type="text" id="output_file" name="output_file" value="sampling.csv" style="flex-grow: 1;">
         </div>
         <br>
@@ -218,12 +236,11 @@
             <div id="model_file_div">
                 <label for="model_file" style="display: inline-block; margin-right: 10px;">Model File:</label>
                 <div style="display: inline-flex; align-items: center;">
-                    <span id="model_folder_path" style="color: #0000FF; margin-right: 5px;">priors/</span>
+                    <span id="model_folder_path" style="margin-right: 5px;">./priors/</span>
                     <input type="text" id="model_file" name="model_file" style="flex-grow: 1;">
                 </div>
-            </div>
-            <br>
-            
+            </div><br>
+
             <!-- SMILES file input (not shown for Sampling/Reinvent combination) -->
             <div id="smiles_file_input" style="display:none;">
                 <label for="smiles_file">SMILES File:</label>
