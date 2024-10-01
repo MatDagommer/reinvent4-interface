@@ -1,0 +1,14 @@
+run_type = "sampling"
+device = "cuda:0"
+json_config = "/Users/matthieu/Documents/Github/reinvent4-interface/configs/json/sampling.json"
+output_csv = "/Users/matthieu/Documents/Github/reinvent4-interface/artifacts/sampling.csv"
+
+[parameters]
+model_path = "/Users/matthieu/Documents/Github/reinvent4-interface/priors/mol2mol_medium_similarity.prior"
+number_of_molecules = 1000
+unique_molecules = true
+randomize = true
+sample_strategy = "beamsearch"
+temperature = 1.0
+tensorboard_log_dir = "tb_logs"
+smiles_file = ""

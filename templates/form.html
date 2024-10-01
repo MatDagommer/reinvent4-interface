@@ -249,24 +249,6 @@
         </select>
         <br><br>
 
-        <!-- <label for="json_config" style="display: inline-block; margin-right: 10px;">JSON Config file:</label>
-        <div style="display: inline-flex; align-items: center;">
-            <span class="folder-icon" style="margin-right: 5px; color: #0000FF; cursor: pointer;" onclick="updateFolderPath()">
-                <i class="fas fa-folder"></i>
-            <span id="current_folder" style="margin-right: 5px;">./configs/json/</span>
-            <input type="text" id="json_config" name="json_config" value="sampling.json" style="flex-grow: 1;">
-        </div>
-
-        <br><br>
-
-        <label for="output_folder" style="display: inline-block; margin-right: 10px;">Output File:</label>
-        <div style="display: inline-flex; align-items: center;">
-            <span id="folder_path" style="margin-right: 5px; color: #0000FF; cursor: pointer;" onclick="selectFolder2()">
-                <i class="fas fa-folder"></i> <span id="current_folder">./artifacts/</span>
-            </span>
-            <input type="text" id="output_file" name="output_file" value="sampling.csv" style="flex-grow: 1;">
-        </div>
-        <br> -->
         <label for="json_config" style="display: inline-block; margin-right: 10px;">JSON Config file:</label>
         <div style="display: inline-flex; align-items: center;">
             <span id="current_folder" style="margin-right: 5px;">./configs/json/</span>
@@ -355,6 +337,16 @@
                 <option value="Option2_BA">Yes</option>
                 <option value="Option2_BB">No</option>
             </select><br><br>
+
+            <div id="components_container">
+                <div id="component1">
+                    <label for="component1_select">Component 1:</label>
+                    <select name="component1_select" id="component1_select" onchange="handleComponentSelection(1)">
+                        <option value="">Select a component</option>
+                    </select><br><br>
+                    <div id="component1_suboptions"></div>
+                </div>
+            </div>
         </div>
 
         <!-- Sub-options for Staged Learning -->
@@ -416,6 +408,151 @@
                     a.remove();
                 });
         });
+
+    
+        const componentOptions = [
+    "QED", "SlogP", "MolecularWeight", "TPSA", "GraphLength", "NumAtomStereoCenters",
+    "HBondAcceptors", "HBondDonors", "NumRotBond", "Csp3", "numsp", "numsp2", "numsp3",
+    "NumHeavyAtoms", "NumHeteroAtoms", "NumRings", "NumAromaticRings", "NumAliphaticRings",
+    "PMI", "MolVolume", "Tanimoto Distance", "PMI 3D-Likeness", "Custom Alerts",
+    "CustomAlerts", "GroupCount", "MatchingSubstructure", "TanimotoSimilarity", "MMP",
+    "ROCSSimilarity", "DockStream", "Icolos", "MAIZE", "ChemProp", "Qptuna", "Qed",
+    "SAScore", "ReactionFilter", "ExternalProcess", "REST", "FragmentMolecularWeight",
+    "FragmentNumAliphaticRings", "FragmentGraphLength", "FragmentEffectiveLength",
+    "FragmentLengthRatio", "FragmentHBondAcceptors", "FragmentHBondDonors",
+    "FragmentNumRotBond", "Fragmentnumsp", "Fragmentnumsp2", "Fragmentnumsp3",
+    "FragmentNumRings", "FragmentNumAromaticRings", "FragmentNumAliphaticRings"
+];
+
+function populateComponentOptions(selectElement, excludeOptions = []) {
+    selectElement.innerHTML = '<option value="">Select a component</option>';
+    componentOptions.forEach(option => {
+        if (!excludeOptions.includes(option)) {
+            const optionElement = document.createElement('option');
+            optionElement.value = option;
+            optionElement.textContent = option;
+            selectElement.appendChild(optionElement);
+        }
+    });
+}
+
+function addNextComponent(currentComponentNumber) {
+    const currentSelect = document.getElementById(`component${currentComponentNumber}_select`);
+    const selectedValue = currentSelect.value;
+
+    if (selectedValue) {
+        const nextComponentNumber = currentComponentNumber + 1;
+        const nextComponentId = `component${nextComponentNumber}`;
+
+        if (!document.getElementById(nextComponentId)) {
+            const newComponent = document.createElement('div');
+            newComponent.id = nextComponentId;
+            newComponent.innerHTML = `
+                <label for="${nextComponentId}_select">Component ${nextComponentNumber}:</label>
+                <select name="${nextComponentId}_select" id="${nextComponentId}_select" onchange="addNextComponent(${nextComponentNumber})">
+                    <option value="">Select a component</option>
+                </select><br><br>
+            `;
+            document.getElementById('components_container').appendChild(newComponent);
+        }
+
+        const selectedOptions = Array.from(document.querySelectorAll('#components_container select'))
+            .map(select => select.value)
+            .filter(value => value !== "");
+
+        populateComponentOptions(document.getElementById(`${nextComponentId}_select`), selectedOptions);
+    } else {
+        // Remove all components after the current one
+        const componentsContainer = document.getElementById('components_container');
+        const allComponents = componentsContainer.children;
+        for (let i = allComponents.length - 1; i >= currentComponentNumber; i--) {
+            componentsContainer.removeChild(allComponents[i]);
+        }
+    }
+}
+
+// Initialize the first component's options
+window.addEventListener('load', function() {
+    populateComponentOptions(document.getElementById('component1_select'));
+});
+
+    function handleComponentSelection(componentNumber) {
+        const selectElement = document.getElementById(`component${componentNumber}_select`);
+        const selectedValue = selectElement.value;
+        const suboptionsContainer = document.getElementById(`component${componentNumber}_suboptions`);
+        
+        // Clear existing suboptions
+        suboptionsContainer.innerHTML = '';
+        
+        if (selectedValue) {
+            // Add suboptions based on the selected component
+            const suboptions = getSuboptions(selectedValue);
+            suboptions.forEach(suboption => {
+                const suboptionElement = document.createElement('div');
+                suboptionElement.innerHTML = `
+                    <label for="${selectedValue}_${suboption.name}">${suboption.label}:</label>
+                    ${suboption.html}<br><br>
+                `;
+                suboptionsContainer.appendChild(suboptionElement);
+            });
+            
+            // Add next component
+            addNextComponent(componentNumber);
+        } else {
+            // Remove all components after the current one
+            removeSubsequentComponents(componentNumber);
+        }
+    }
+
+    function getSuboptions(component) {
+        // Define suboptions for each component
+        const suboptionsMap = {
+            "QED": [
+                { name: "weight", label: "Weight", html: '<input type="number" id="QED_weight" name="QED_weight" min="0" max="1" step="0.1" value="1">' }
+            ],
+            "SlogP": [
+                { name: "min", label: "Minimum", html: '<input type="number" id="SlogP_min" name="SlogP_min" value="-5">' },
+                { name: "max", label: "Maximum", html: '<input type="number" id="SlogP_max" name="SlogP_max" value="5">' },
+                { name: "weight", label: "Weight", html: '<input type="number" id="SlogP_weight" name="SlogP_weight" min="0" max="1" step="0.1" value="1">' }
+            ],
+            // Add more components and their suboptions here
+        };
+        
+        return suboptionsMap[component] || [];
+    }
+
+    function addNextComponent(currentComponentNumber) {
+        const nextComponentNumber = currentComponentNumber + 1;
+        const nextComponentId = `component${nextComponentNumber}`;
+
+        if (!document.getElementById(nextComponentId)) {
+            const newComponent = document.createElement('div');
+            newComponent.id = nextComponentId;
+            newComponent.innerHTML = `
+                <label for="${nextComponentId}_select">Component ${nextComponentNumber}:</label>
+                <select name="${nextComponentId}_select" id="${nextComponentId}_select" onchange="handleComponentSelection(${nextComponentNumber})">
+                    <option value="">Select a component</option>
+                </select><br><br>
+                <div id="${nextComponentId}_suboptions"></div>
+            `;
+            document.getElementById('components_container').appendChild(newComponent);
+        }
+
+        const selectedOptions = Array.from(document.querySelectorAll('#components_container select'))
+            .map(select => select.value)
+            .filter(value => value !== "");
+
+        populateComponentOptions(document.getElementById(`${nextComponentId}_select`), selectedOptions);
+    }
+
+    function removeSubsequentComponents(componentNumber) {
+        const componentsContainer = document.getElementById('components_container');
+        const allComponents = componentsContainer.children;
+        for (let i = allComponents.length - 1; i >= componentNumber; i--) {
+            componentsContainer.removeChild(allComponents[i]);
+        }
+    }
+
     </script>
 </body>
 </html>
